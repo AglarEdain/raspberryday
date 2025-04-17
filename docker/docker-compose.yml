@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  server:
+    image: node:18
+    working_dir: /app
+    volumes:
+      - ../server:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../server/.env
+    command: sh -c "npm install && npm start"
+    restart: unless-stopped
+
+  mariadb:
+    image: mariadb:lts
+    environment:
+      MYSQL_ROOT_PASSWORD: example
+      MYSQL_DATABASE: raspberryday
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  mariadb_data:
