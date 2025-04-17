@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Diaporama RaspberryDay</title>
+  <style>
+    body { margin: 0; background: black; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    img { max-width: 100%; max-height: 100%; display: none; }
+    img.active { display: block; }
+  </style>
+</head>
+<body>
+  <div id="slideshow">
+    <!-- Images seront insérées ici -->
+  </div>
+
+  <script>
+    const ws = new WebSocket('ws://localhost:8080');
+    const slideshow = document.getElementById('slideshow');
+    let images = [];
+    let currentIndex = 0;
+    let playing = true;
+    let slideInterval = null;
+
+    ws.onmessage = (event) => {
+      const command = event.data;
+      console.log('Commande reçue:', command);
+      switch(command) {
+        case 'next':
+          showNext();
+          break;
+        case 'previous':
+          showPrevious();
+          break;
+        case 'togglePlay':
+          togglePlayPause();
+          break;
+        case 'volumeUp':
+          // TODO: gérer volume
+          break;
+        case 'volumeDown':
+          // TODO: gérer volume
+          break;
+      }
+    };
+
+    function loadImages() {
+      // Charger les images du dossier (exemple statique ici)
+      images = [
+        'image1.jpg',
+        'image2.jpg',
+        'image3.jpg'
+      ];
+      images.forEach(src => {
+        const img = document.createElement('img');
+        img.src = src;
+        slideshow.appendChild(img);
+      });
+      showImage(0);
+    }
+
+    function showImage(index) {
+      const imgs = slideshow.querySelectorAll('img');
+      imgs.forEach(img => img.classList.remove('active'));
+      imgs[index].classList.add('active');
+      currentIndex = index;
+    }
+
+    function showNext() {
+      let nextIndex = (currentIndex + 1) % images.length;
+      showImage(nextIndex);
+    }
+
+    function showPrevious() {
+      let prevIndex = (currentIndex - 1 + images.length) % images.length;
+      showImage(prevIndex);
+    }
+
+    function togglePlayPause() {
+      if (playing) {
+        clearInterval(slideInterval);
+      } else {
+        slideInterval = setInterval(showNext, 5000);
+      }
+      playing = !playing;
+    }
+
+    // Démarrer le diaporama
+    loadImages();
+    slideInterval = setInterval(showNext, 5000);
+  </script>
+</body>
+</html>
